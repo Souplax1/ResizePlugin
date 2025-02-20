@@ -50,7 +50,7 @@ namespace HelloWorldPlugin
             string targetName = command.GetArg(1);
             if (!float.TryParse(command.GetArg(2), out float newScale))
             {
-                admin.PrintToChat("Invalid scale value! Use a number between 0.5 and 2.0.");
+                admin.PrintToChat("Invalid scale value! Use a number between 0.1 and 10.0.");
                 return;
             }
 
