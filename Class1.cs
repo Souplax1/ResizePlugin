@@ -1,10 +1,11 @@
-﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Entities;
+using CounterStrikeSharp.API.Modules.Events;
 using CounterStrikeSharp.API.Modules.Utils;
-
 
 namespace HelloWorldPlugin
 {
@@ -12,13 +13,25 @@ namespace HelloWorldPlugin
     {
         public override string ModuleName => "hitbox";
         public override string ModuleAuthor => "Yeezy";
-        public override string ModuleVersion => "0.0.4";
+        public override string ModuleVersion => "0.0.5";
 
         public override void Load(bool hotReload)
         {
-            // Register the admin command
-         
             AddCommand("size", "Sets a player's size", SetPlayerSizeCommand);
+            RegisterEventHandler<EventRoundStart>(OnRoundStart);
+        }
+
+        private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
+        {
+            foreach (var player in Utilities.GetPlayers())
+            {
+                if (player?.PlayerPawn?.Value == null) continue;
+
+             
+                SetPlayerScale(player, 1.0f);
+            }
+
+            return HookResult.Continue;
         }
 
         private void SetPlayerScale(CCSPlayerController player, float scale)
@@ -36,6 +49,7 @@ namespace HelloWorldPlugin
                 Utilities.SetStateChanged(player.PlayerPawn.Value, "CBaseEntity", "m_CBodyComponent");
             });
         }
+
         [RequiresPermissions("@css/root")]
         [ConsoleCommand("css_size", "Resize a player")]
         [CommandHelper(minArgs: 2, usage: "<target> <size>", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
