@@ -1,2 +1,2 @@
 # ResizePlugin
-simple resize plugin + hitbox
+simple resize plugin + working hitbox
