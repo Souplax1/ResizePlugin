@@ -27,7 +27,7 @@ namespace HelloWorldPlugin
             {
                 if (player?.PlayerPawn?.Value == null) continue;
 
-             
+
                 SetPlayerScale(player, 1.0f);
             }
 
@@ -51,8 +51,8 @@ namespace HelloWorldPlugin
         }
 
         [RequiresPermissions("@css/root")]
-        [ConsoleCommand("css_size", "Resize a player")]
-        [CommandHelper(minArgs: 2, usage: "<target> <size>", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+        [ConsoleCommand("css_size", "Resize a player or team")]
+        [CommandHelper(minArgs: 2, usage: "<@all | @CT | @T | player_name | SteamID> <size>", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
         private void SetPlayerSizeCommand(CCSPlayerController? admin, CommandInfo command)
         {
             if (admin == null)
@@ -70,22 +70,54 @@ namespace HelloWorldPlugin
 
             newScale = Math.Clamp(newScale, 0.1f, 10.0f);
 
-            ulong targetSteamID;
-            bool isSteamID = ulong.TryParse(targetName, out targetSteamID);
+            List<CCSPlayerController> targetPlayers = new List<CCSPlayerController>();
 
-            foreach (var player in Utilities.GetPlayers())
+            // ✅ Apply to all players
+            if (targetName.Equals("@all", StringComparison.OrdinalIgnoreCase))
             {
-                if (player.PlayerName.Equals(targetName, StringComparison.OrdinalIgnoreCase) ||
-                    (isSteamID && player.SteamID == targetSteamID))
+                targetPlayers.AddRange(Utilities.GetPlayers());
+            }
+            // ✅ Apply to all CTs
+            else if (targetName.Equals("@CT", StringComparison.OrdinalIgnoreCase))
+            {
+                targetPlayers.AddRange(Utilities.GetPlayers().Where(p => p.Team == CsTeam.CounterTerrorist));
+            }
+            // ✅ Apply to all Ts
+            else if (targetName.Equals("@T", StringComparison.OrdinalIgnoreCase))
+            {
+                targetPlayers.AddRange(Utilities.GetPlayers().Where(p => p.Team == CsTeam.Terrorist));
+            }
+            else
+            {
+                // ✅ Check by name or SteamID
+                ulong targetSteamID;
+                bool isSteamID = ulong.TryParse(targetName, out targetSteamID);
+
+                var player = Utilities.GetPlayers().FirstOrDefault(p =>
+                    p.PlayerName.Equals(targetName, StringComparison.OrdinalIgnoreCase) ||
+                    (isSteamID && p.SteamID == targetSteamID));
+
+                if (player != null)
                 {
-                    SetPlayerScale(player, newScale);
-                    admin.PrintToChat($"[{ChatColors.Green}Admin{ChatColors.Default}] {ChatColors.Default}Set {ChatColors.Gold}{player.PlayerName}{ChatColors.Default}'s size to {ChatColors.Red}{newScale}.");
-                    player.PrintToChat($"[Admin] Your size has been set to {newScale}.");
-                    return;
+                    targetPlayers.Add(player);
                 }
             }
 
-            admin.PrintToChat("Player not found!");
+            // ✅ Apply scaling to selected players
+            if (targetPlayers.Count > 0)
+            {
+                foreach (var player in targetPlayers)
+                {
+                    SetPlayerScale(player, newScale);
+                    player.PrintToChat($"[Admin] Your size has been set to {newScale}.");
+                }
+
+                admin.PrintToChat($"[Admin] Set size to {newScale} for {targetPlayers.Count} player(s).");
+            }
+            else
+            {
+                admin.PrintToChat("Player or team not found!");
+            }
         }
+      }
     }
-}
