@@ -72,24 +72,23 @@ namespace HelloWorldPlugin
 
             List<CCSPlayerController> targetPlayers = new List<CCSPlayerController>();
 
-            // ✅ Apply to all players
             if (targetName.Equals("@all", StringComparison.OrdinalIgnoreCase))
             {
                 targetPlayers.AddRange(Utilities.GetPlayers());
             }
-            // ✅ Apply to all CTs
+  
             else if (targetName.Equals("@CT", StringComparison.OrdinalIgnoreCase))
             {
                 targetPlayers.AddRange(Utilities.GetPlayers().Where(p => p.Team == CsTeam.CounterTerrorist));
             }
-            // ✅ Apply to all Ts
+   
             else if (targetName.Equals("@T", StringComparison.OrdinalIgnoreCase))
             {
                 targetPlayers.AddRange(Utilities.GetPlayers().Where(p => p.Team == CsTeam.Terrorist));
             }
             else
             {
-                // ✅ Check by name or SteamID
+                // Check by name or SteamID
                 ulong targetSteamID;
                 bool isSteamID = ulong.TryParse(targetName, out targetSteamID);
 
@@ -103,7 +102,7 @@ namespace HelloWorldPlugin
                 }
             }
 
-            // ✅ Apply scaling to selected players
+            // Apply scaling to selected players
             if (targetPlayers.Count > 0)
             {
                 foreach (var player in targetPlayers)
