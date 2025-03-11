@@ -3,13 +3,11 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Entities;
-using CounterStrikeSharp.API.Modules.Events;
 using CounterStrikeSharp.API.Modules.Utils;
 
-namespace HelloWorldPlugin
+namespace ResizePlugin
 {
-    public class HelloWorldPlugin : BasePlugin
+    public class resize : BasePlugin
     {
         public override string ModuleName => "hitbox";
         public override string ModuleAuthor => "Yeezy";
@@ -18,20 +16,7 @@ namespace HelloWorldPlugin
         public override void Load(bool hotReload)
         {
             AddCommand("size", "Sets a player's size", SetPlayerSizeCommand);
-            RegisterEventHandler<EventRoundStart>(OnRoundStart);
-        }
-
-        private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
-        {
-            foreach (var player in Utilities.GetPlayers())
-            {
-                if (player?.PlayerPawn?.Value == null) continue;
-
-
-                SetPlayerScale(player, 1.0f);
-            }
-
-            return HookResult.Continue;
+            RegisterEventHandler<EventPlayerSpawn>(OnPlayerSpawn);
         }
 
         private void SetPlayerScale(CCSPlayerController player, float scale)
@@ -76,12 +61,12 @@ namespace HelloWorldPlugin
             {
                 targetPlayers.AddRange(Utilities.GetPlayers());
             }
-  
+
             else if (targetName.Equals("@CT", StringComparison.OrdinalIgnoreCase))
             {
                 targetPlayers.AddRange(Utilities.GetPlayers().Where(p => p.Team == CsTeam.CounterTerrorist));
             }
-   
+
             else if (targetName.Equals("@T", StringComparison.OrdinalIgnoreCase))
             {
                 targetPlayers.AddRange(Utilities.GetPlayers().Where(p => p.Team == CsTeam.Terrorist));
@@ -118,5 +103,15 @@ namespace HelloWorldPlugin
                 admin.PrintToChat("Player or team not found!");
             }
         }
-      }
+        private HookResult OnPlayerSpawn(EventPlayerSpawn @event, GameEventInfo info)
+        {
+            var player = @event.Userid;
+
+            if (player?.PlayerPawn?.Value == null) return HookResult.Continue;
+
+            SetPlayerScale(player, 1.0f);
+
+            return HookResult.Continue;
+        }
     }
+}
